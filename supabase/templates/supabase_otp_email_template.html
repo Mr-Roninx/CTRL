@@ -1,0 +1,209 @@
+<!--
+================================================================================
+CTRL ENTERPRISE OTP & MAGIC LINK EMAIL TEMPLATE FOR SUPABASE AUTH
+================================================================================
+Recommended Subject in Supabase Dashboard:
+{{ .Token }} is your CTRL verification code
+
+Supported Supabase Template Types:
+- Magic Link (Authentication -> Email Templates -> Magic Link)
+- Confirm signup (Authentication -> Email Templates -> Confirm signup)
+- Change Email Address (Authentication -> Email Templates -> Change Email Address)
+
+Variables Used:
+- {{ .Token }}            : The 6-digit numeric OTP code (e.g., 849201)
+- {{ .ConfirmationURL }}  : 1-click Magic Link URL
+- {{ .Email }}            : Recipient merchant email address
+- {{ .SiteURL }}          : Merchant dashboard root URL
+================================================================================
+-->
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
+  <title>{{ .Token }} is your CTRL verification code</title>
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+  <style>
+    :root {
+      color-scheme: light dark;
+      supported-color-schemes: light dark;
+    }
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
+    body { margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100% !important; }
+    
+    @media (prefers-color-scheme: dark) {
+      .email-bg { background-color: #030712 !important; }
+      .card-bg { background-color: #0b1329 !important; border-color: #1e293b !important; }
+      .text-title { color: #f8fafc !important; }
+      .text-body { color: #94a3b8 !important; }
+      .otp-box { background-color: #020617 !important; border-color: #3b82f6 !important; }
+      .otp-code { color: #60a5fa !important; }
+      .footer-bg { background-color: #030712 !important; border-color: #1e293b !important; }
+      .alert-box { background-color: #1e1b4b !important; border-color: #312e81 !important; }
+      .alert-text { color: #c7d2fe !important; }
+    }
+  </style>
+</head>
+<body class="email-bg" style="margin: 0; padding: 0; background-color: #0a0f1d; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; color: #0f172a;">
+
+  <!-- Main Wrapper -->
+  <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" class="email-bg" style="background-color: #0a0f1d; padding: 48px 16px;">
+    <tr>
+      <td align="center">
+
+        <!-- Outer Container Box -->
+        <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 540px; margin: 0 auto;">
+          
+          <!-- Brand Badge Header -->
+          <tr>
+            <td align="center" style="padding-bottom: 24px;">
+              <table role="presentation" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td style="padding: 8px 16px; background: rgba(30, 58, 138, 0.4); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 9999px; text-align: center;">
+                    <span style="font-size: 16px; margin-right: 6px;">🛡️</span>
+                    <span style="font-size: 13px; font-weight: 800; letter-spacing: 2px; color: #60a5fa; text-transform: uppercase;">
+                      CTRL CONTROL PLANE
+                    </span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Main Content Card -->
+          <tr>
+            <td>
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" class="card-bg" style="background-color: #0f172a; border: 1px solid #1e293b; border-radius: 20px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);">
+                
+                <!-- Card Header -->
+                <tr>
+                  <td style="padding: 36px 36px 12px 36px; text-align: center;">
+                    <h1 class="text-title" style="margin: 0 0 10px 0; font-size: 24px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">
+                      Verification Code
+                    </h1>
+                    <p class="text-body" style="margin: 0; font-size: 14px; color: #94a3b8; line-height: 1.5;">
+                      Secure one-time authentication code for <strong style="color: #cbd5e1;">{{ .Email }}</strong>
+                    </p>
+                  </td>
+                </tr>
+
+                <!-- Code Container Section -->
+                <tr>
+                  <td style="padding: 24px 36px 20px 36px; text-align: center;">
+                    <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td align="center" class="otp-box" style="background-color: #020617; border: 2px dashed #3b82f6; border-radius: 14px; padding: 24px 16px;">
+                          <div style="font-size: 11px; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px;">
+                            One-Time Password (OTP)
+                          </div>
+                          <!-- 6-digit numeric token injected by Supabase -->
+                          <div class="otp-code" style="font-family: 'SF Mono', Monaco, Menlo, Consolas, 'Courier New', monospace; font-size: 42px; font-weight: 800; letter-spacing: 12px; color: #60a5fa; line-height: 1.1;">
+                            {{ .Token }}
+                          </div>
+                          <div style="font-size: 12px; color: #64748b; margin-top: 10px;">
+                            ⏱️ Expires in <strong style="color: #94a3b8;">10 minutes</strong>
+                          </div>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- One-Click Instant Sign In Button (Magic Link) -->
+                <tr>
+                  <td style="padding: 4px 36px 24px 36px; text-align: center;">
+                    <p class="text-body" style="margin: 0 0 16px 0; font-size: 13px; color: #94a3b8;">
+                      Prefer one-click login? Tap below to authenticate instantly:
+                    </p>
+                    <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
+                      <tr>
+                        <td align="center" style="border-radius: 10px; background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%); box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);">
+                          <a href="{{ .ConfirmationURL }}" target="_blank" style="display: inline-block; padding: 14px 32px; font-size: 14px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 10px; letter-spacing: 0.3px;">
+                            Sign In Instantly with Magic Link →
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- Security Advisory Banner -->
+                <tr>
+                  <td style="padding: 0 36px 32px 36px;">
+                    <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" class="alert-box" style="background-color: #1e1b4b; border: 1px solid #312e81; border-radius: 10px; padding: 14px 16px;">
+                      <tr>
+                        <td width="24" valign="top" style="padding-right: 12px; font-size: 18px;">
+                          🔒
+                        </td>
+                        <td class="alert-text" style="font-size: 12px; line-height: 1.6; color: #c7d2fe;">
+                          <strong>Security Notice:</strong> Never share this code with anyone. CTRL systems will never request your verification code via phone, chat, or external email.
+                        </td>
+                      </tr>
+                    </table>
+
+                    <p style="margin: 20px 0 0 0; font-size: 12px; color: #64748b; line-height: 1.5; text-align: center;">
+                      If you did not request this login code, no action is required. Your merchant account and payment telemetry remain completely secure.
+                    </p>
+                  </td>
+                </tr>
+
+                <!-- Direct URL Fallback (For accessibility & inspection) -->
+                <tr>
+                  <td style="padding: 16px 36px; background-color: #090d1a; border-top: 1px solid #1e293b; text-align: left;">
+                    <p style="margin: 0 0 6px 0; font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">
+                      Direct Verification Link
+                    </p>
+                    <p style="margin: 0; font-size: 11px; color: #475569; word-break: break-all; line-height: 1.4;">
+                      <a href="{{ .ConfirmationURL }}" style="color: #38bdf8; text-decoration: underline;">{{ .ConfirmationURL }}</a>
+                    </p>
+                  </td>
+                </tr>
+
+                <!-- Card Footer -->
+                <tr>
+                  <td class="footer-bg" style="padding: 20px 36px; background-color: #070a14; border-top: 1px solid #1e293b; text-align: center;">
+                    <p style="margin: 0 0 6px 0; font-size: 12px; font-weight: 600; color: #94a3b8;">
+                      CTRL Autonomous Recovery Control Plane
+                    </p>
+                    <p style="margin: 0; font-size: 11px; color: #475569; line-height: 1.4;">
+                      Autonomous economic failed-payment recovery engine on Razorpay.<br>
+                      Deterministic Action Authority • Zero Financial Risk
+                    </p>
+                  </td>
+                </tr>
+
+              </table>
+            </td>
+          </tr>
+
+          <!-- Outer Security Footnote -->
+          <tr>
+            <td align="center" style="padding-top: 24px;">
+              <p style="margin: 0; font-size: 11px; color: #475569;">
+                Protected by end-to-end cryptographic authentication & rate limiting.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>

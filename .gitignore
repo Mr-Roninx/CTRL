@@ -1,0 +1,54 @@
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+
+# Database
+*.db
+*.db-wal
+*.db-shm
+*.bak
+archive/backups/
+*.contaminated-backup*
+
+# Screenshots & Local Dumps
+*.png
+
+# Python (Legacy)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+# Python Virtualenvs
+.Python
+env/
+venv/
+ENV/
+build/
+dist/
+*.egg-info/
+
+# Frontend Lib Whitelist
+!frontend/src/lib/
+
+# Testing & Artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+results/
+scratch/
+archive/
+plans/
+
+# Local Model Weights & Caches
+models/
+.cache/
+
+# Node / Frontend
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.next/
+out/
+dist/

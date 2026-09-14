@@ -1,0 +1,88 @@
+name: CTRL CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test_and_verify:
+    name: Lint, Test, Security Audit & Build
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: ctrl
+          POSTGRES_PASSWORD: ctrl_secure_password
+          POSTGRES_DB: ctrl_test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Source Code
+      uses: actions/checkout@v4
+
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - name: Install Backend Dependencies
+        run: npm ci
+
+      - name: Typecheck Backend
+        run: npx tsc --noEmit
+
+      - name: Run Infrastructure & Migration Verification
+        run: npx tsx tests/infra/test_migrations.ts
+        env:
+          DATABASE_URL: postgres://ctrl:ctrl_secure_password@localhost:5432/ctrl_test_db
+          REDIS_URL: redis://localhost:6379
+
+      - name: Run Master Agent & Invariant Test Suite
+        run: npm run test:agent
+        env:
+          DATABASE_URL: sqlite:///ctrl.db
+
+      - name: Run Core & Economic Pipeline Test Suite
+        run: npm run test:v6-all
+        env:
+          DATABASE_URL: sqlite:///ctrl.db
+
+      - name: Run Causal Experiments & Benchmarks
+        run: npm run experiments:causal
+        env:
+          DATABASE_URL: sqlite:///ctrl.db
+
+      - name: Security Vulnerability Scan (npm audit)
+        run: npm audit --audit-level=high
+
+      - name: Build Backend Production Artifact
+        run: npm run build
+
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Build Frontend Production Artifact
+        working-directory: ./frontend
+        run: npm run build

@@ -1,0 +1,158 @@
+version: '3.8'
+
+services:
+  # --- PostgreSQL 15+ Enterprise Relational Core ---
+  postgres:
+    image: postgres:15-alpine
+    container_name: ctrl-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ctrl
+      POSTGRES_PASSWORD: ctrl_secure_password
+      POSTGRES_DB: ctrl_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ctrl -d ctrl_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ctrl-net
+
+  # --- Redis 7+ Distributed Message & Cache Layer ---
+  redis:
+    image: redis:7-alpine
+    container_name: ctrl-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ctrl-net
+
+  # --- CTRL Autonomous Control Plane Daemon ---
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ctrl-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: postgres://ctrl:ctrl_secure_password@postgres:5432/ctrl_db
+      DATABASE_POOL_SIZE: 15
+      REDIS_URL: redis://redis:6379
+      NVIDIA_BASE_URL: https://integrate.api.nvidia.com/v1
+      NVIDIA_API_KEY: ${NVIDIA_API_KEY}
+      LLM_MODEL: nvidia/nemotron-3.5-lightning-30b-a3b
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET}
+      RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET}
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - ctrl-net
+
+  # --- CTRL Single-Page Management Dashboard ---
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ctrl-frontend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - ctrl-net
+
+  # --- NGINX Reverse Proxy & Edge Rate Limiter ---
+  nginx:
+    image: nginx:alpine
+    container_name: ctrl-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+    networks:
+      - ctrl-net
+
+  # --- CTRL Decoupled Horizontal Background Workers (V11) ---
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: ["npx", "tsx", "src/worker.ts"]
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://ctrl:ctrl_secure_password@postgres:5432/ctrl_db
+      REDIS_URL: redis://redis:6379
+      DISTRIBUTED_WORKERS: "true"
+      AUTONOMOUS_AGENT_ENABLED: "true"
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318/v1/traces
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - ctrl-net
+
+  # --- OpenTelemetry All-in-One Jaeger Tracing ---
+  jaeger:
+    image: jaegertracing/all-in-one:1.53
+    container_name: ctrl-jaeger
+    restart: unless-stopped
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "16686:16686" # Web UI
+      - "4318:4318"   # OTLP HTTP receiver
+    networks:
+      - ctrl-net
+
+  # --- Prometheus Metrics Collection ---
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: ctrl-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    networks:
+      - ctrl-net
+
+volumes:
+  pg_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  ctrl-net:
+    driver: bridge
